@@ -355,9 +355,9 @@ def render_taskc_figure(taskc_summary: pd.DataFrame, taskc_predictions: pd.DataF
 
 def render_taska_coefficient_stability(coeff_dir: Path, outdir: Path) -> None:
     method_files = {
-        "standard_zscore": coeff_dir / "task_a_standard_zscore_coefficients.tsv.gz",
-        "sample_rank_zscore": coeff_dir / "task_a_sample_rank_zscore_coefficients.tsv.gz",
-        "cohort_robust_scale": coeff_dir / "task_a_cohort_robust_scale_coefficients.tsv.gz",
+        "standard_zscore": coeff_dir / "task_a_standard_zscore_coefficients.tsv",
+        "sample_rank_zscore": coeff_dir / "task_a_sample_rank_zscore_coefficients.tsv",
+        "cohort_robust_scale": coeff_dir / "task_a_cohort_robust_scale_coefficients.tsv",
     }
     method_label_map = {
         key: METHOD_LABELS[key] for key in method_files

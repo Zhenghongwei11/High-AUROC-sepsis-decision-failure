@@ -86,8 +86,8 @@ def main() -> int:
             coef_df["abs_coefficient"] = coef_df["coefficient"].abs()
             coef_df = coef_df.sort_values("abs_coefficient", ascending=False)
 
-            out_path = out_dir / f"{task_id}_{method}_coefficients.tsv.gz"
-            coef_df.to_csv(out_path, sep="\t", index=False, compression="gzip")
+            out_path = out_dir / f"{task_id}_{method}_coefficients.tsv"
+            coef_df.to_csv(out_path, sep="\t", index=False)
 
             manifest_rows.append(
                 {
