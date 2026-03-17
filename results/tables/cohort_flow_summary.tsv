@@ -1,0 +1,5 @@
+dataset_id	dataset_title	geo_series_samples	excluded_after_harmonization	mainline_included	task_a_included	task_b_included	task_c_included	analysis_role	notes
+GSE65682	Genome-wide blood transcriptional profiling in critically ill patients - MARS consortium	802	443	359	93	126	93	primary_discovery	Large ICU whole-blood microarray cohort; primary discovery and internal resampling set
+GSE95233	Fractalkine receptor CX3CR1 and leukocyte Ig-like receptor B2 LILRB2 are prognostic biomarkers in septic shock	124	51	73	73	0	73	external_validation	Independent septic shock plus healthy-control array cohort for external validation
+GSE154918	RNAseq analysis of blood from sepsis patients and healthy controls	105	14	91	79	0	79	cross_platform_validation	RNA-seq blood cohort for microarray-to-RNA-seq transfer validation; expression matrix lives in GEO supplementary file, while sample metadata was parsed from the series matrix
+GSE28750	Development and Validation of a Novel Molecular Biomarker Diagnostic Test for the Early Detection of Sepsis	41	0	41	30	21	30	stress_test	Contains sepsis, post-surgical inflammation, and healthy controls for harder stress testing

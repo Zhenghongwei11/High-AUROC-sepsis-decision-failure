@@ -1,0 +1,5 @@
+dataset_id	included_samples	excluded_samples	n_healthy	n_infection_non_sepsis	n_sepsis	n_septic_shock	n_noninfectious_inflammation	supports_task_a_sepsis_or_shock_vs_healthy	supports_task_b_sepsis_vs_noninfectious_inflammation	supports_task_c_cross_platform_transfer_candidate
+GSE154918	91	14	40	12	20	19	0	yes	no	yes
+GSE28750	41	0	20	0	10	0	11	yes	yes	no
+GSE65682	359	443	42	191	51	0	75	yes	yes	no
+GSE95233	73	51	22	0	0	51	0	yes	no	no

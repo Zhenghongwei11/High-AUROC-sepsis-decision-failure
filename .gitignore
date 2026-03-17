@@ -1,0 +1,14 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+data/raw/
+data/processed/
+logs/
+docs/audit_runs/
+docs/review_bundle/*.zip
+docs/review_bundle/CHECKSUMS.sha256
+docs/review_bundle/CONTENTS.txt
+results/metadata/
+results/figures/
+results/tasks/
