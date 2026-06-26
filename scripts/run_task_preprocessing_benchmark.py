@@ -15,7 +15,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import benchmark_loader as loader  # noqa: E402
 from run_task_a_preprocessing_benchmark import (  # noqa: E402
-    METHODS,
+    STRATEGIES,
     TRAIN_DATASET,
     build_model,
     internal_cv_scores,
@@ -92,7 +92,10 @@ def main() -> int:
     prediction_rows: list[dict[str, str | float | int]] = []
     summary_rows: list[dict[str, str | float | int]] = []
 
-    for method in METHODS:
+    for strategy_def in STRATEGIES:
+        strategy = strategy_def["strategy"]
+        method = strategy_def["preprocessing_method"]
+        external_reference_strategy = strategy_def["external_reference_strategy"]
         cv_scores = internal_cv_scores(train_matrix, y_train, method=method)
         best_threshold, _ = pick_best_threshold(y_train, cv_scores)
 
@@ -105,7 +108,10 @@ def main() -> int:
                 {
                     "task_id": args.task_id,
                     "task_name": task_def["task_name"],
-                    "method": method,
+                    "method": strategy,
+                    "strategy": strategy,
+                    "preprocessing_method": method,
+                    "external_reference_strategy": "training_fold_only",
                     "evaluation_type": "internal_cv",
                     "threshold_type": threshold_type,
                     "threshold": float(threshold),
@@ -122,7 +128,10 @@ def main() -> int:
             prediction_rows.append(
                 {
                     "task_id": args.task_id,
-                    "method": method,
+                    "method": strategy,
+                    "strategy": strategy,
+                    "preprocessing_method": method,
+                    "external_reference_strategy": "training_fold_only",
                     "evaluation_type": "internal_cv",
                     "dataset_id": args.train_dataset,
                     "sample_id": sample_id,
@@ -151,7 +160,7 @@ def main() -> int:
                 method=method,
                 x_train=train_matrix,
                 x_eval=test_matrix,
-                use_eval_reference=(method == "cohort_robust_scale"),
+                use_eval_reference=bool(strategy_def["use_eval_reference_external"]),
             )
             scores = pd.Series(
                 model.predict_proba(external_transform.x_eval)[:, 1],
@@ -167,7 +176,10 @@ def main() -> int:
                     {
                         "task_id": args.task_id,
                         "task_name": task_def["task_name"],
-                        "method": method,
+                        "method": strategy,
+                        "strategy": strategy,
+                        "preprocessing_method": method,
+                        "external_reference_strategy": external_reference_strategy,
                         "evaluation_type": "external",
                         "threshold_type": threshold_type,
                         "threshold": float(threshold),
@@ -184,7 +196,10 @@ def main() -> int:
                 prediction_rows.append(
                     {
                         "task_id": args.task_id,
-                        "method": method,
+                        "method": strategy,
+                        "strategy": strategy,
+                        "preprocessing_method": method,
+                        "external_reference_strategy": external_reference_strategy,
                         "evaluation_type": "external",
                         "dataset_id": dataset_id,
                         "sample_id": sample_id,

@@ -12,18 +12,23 @@ import seaborn as sns
 
 METHOD_LABELS = {
     "standard_zscore": "Standard z-score",
+    "standard_zscore_train_only": "Standard z-score\n(train ref)",
+    "robust_scale_train_only": "Robust scale\n(train ref)",
     "sample_rank_zscore": "Sample rank + z-score",
     "cohort_robust_scale": "Cohort robust scale",
+    "robust_scale_external_adaptive": "Robust scale\n(external ref)",
 }
 METHOD_ORDER = [
-    "Standard z-score",
+    "Standard z-score\n(train ref)",
+    "Robust scale\n(train ref)",
     "Sample rank + z-score",
-    "Cohort robust scale",
+    "Robust scale\n(external ref)",
 ]
 METHOD_COLORS = {
-    "Standard z-score": "#6E7F80",
+    "Standard z-score\n(train ref)": "#6E7F80",
+    "Robust scale\n(train ref)": "#9B8E7E",
     "Sample rank + z-score": "#4C6A92",
-    "Cohort robust scale": "#8B5E3C",
+    "Robust scale\n(external ref)": "#8B5E3C",
 }
 CLASS_COLORS = {
     "Non-infectious inflammation": "#CFD6DC",
@@ -145,8 +150,8 @@ def main() -> int:
         hue="method_label",
         hue_order=METHOD_ORDER,
         palette=METHOD_COLORS,
-        markers=["o", "s", "D"],
-        linestyles=["-", "-", "-"],
+        markers=["o", "^", "s", "D"],
+        linestyles=["-", "-", "-", "--"],
         errorbar=None,
         ax=axes[0, 1],
     )
@@ -201,7 +206,7 @@ def main() -> int:
         palette=["#445B66", "#BC6C25"],
         ax=axes[1, 1],
     )
-    axes[1, 1].set_title("Robust scaling best preserves the decision scale")
+    axes[1, 1].set_title("Observed and predicted rates under harder negatives")
     axes[1, 1].set_xlabel("")
     axes[1, 1].set_ylabel("Rate (%)")
     axes[1, 1].set_ylim(0, 100)

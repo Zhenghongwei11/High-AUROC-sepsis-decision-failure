@@ -1,10 +1,12 @@
-#!/usr/bin/env python3
-
 from __future__ import annotations
 
-import argparse
 import csv
 from pathlib import Path
+
+
+OUTPUT_PATH = Path(
+    "/Users/simanan/Desktop/plos one 2/results/tables/metadata_completeness_summary.tsv"
+)
 
 
 ROWS = [
@@ -82,27 +84,13 @@ ROWS = [
     },
 ]
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Write the metadata-completeness audit table for the public cohorts."
-    )
-    parser.add_argument(
-        "--out",
-        default="results/tables/metadata_completeness_summary.tsv",
-        help="Output TSV path.",
-    )
-    return parser.parse_args()
-
 
 def main() -> None:
-    args = parse_args()
-    output_path = Path(args.out)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", newline="", encoding="utf-8") as handle:
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with OUTPUT_PATH.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(ROWS[0].keys()), delimiter="\t")
         writer.writeheader()
         writer.writerows(ROWS)
-    print(f"[wrote] {output_path}")
 
 
 if __name__ == "__main__":

@@ -18,11 +18,35 @@ Examples:
 EOF
 }
 
-download_file() {
-  local url="$1"
-  local out_file="$2"
+url_for() {
+  case "$1" in
+    GSE65682) printf '%s\n' "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE65nnn/GSE65682/matrix/GSE65682_series_matrix.txt.gz" ;;
+    GSE95233) printf '%s\n' "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE95nnn/GSE95233/matrix/GSE95233_series_matrix.txt.gz" ;;
+    GSE154918) printf '%s\n' "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE154nnn/GSE154918/suppl/GSE154918_Schughart_Sepsis_200320.txt.gz" ;;
+    GSE28750) printf '%s\n' "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE28nnn/GSE28750/matrix/GSE28750_series_matrix.txt.gz" ;;
+    GSE69528) printf '%s\n' "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE69nnn/GSE69528/matrix/GSE69528_series_matrix.txt.gz" ;;
+    *)
+      printf 'Unknown dataset: %s\n' "$1" >&2
+      return 1
+      ;;
+  esac
+}
 
-  mkdir -p "$(dirname "${out_file}")"
+download_one() {
+  local dataset="$1"
+  local url
+  local out_dir
+  local out_file
+
+  url="$(url_for "${dataset}")"
+  out_dir="${OUT_ROOT}/${dataset}"
+  if [[ "${dataset}" == "GSE154918" ]]; then
+    out_file="${out_dir}/GSE154918_Schughart_Sepsis_200320.txt.gz"
+  else
+    out_file="${out_dir}/${dataset}_series_matrix.txt.gz"
+  fi
+
+  mkdir -p "${out_dir}"
 
   if [[ "${DRY_RUN}" -eq 1 ]]; then
     printf '[dry-run] %s -> %s\n' "${url}" "${out_file}"
@@ -34,50 +58,9 @@ download_file() {
     return 0
   fi
 
+  printf '[download] %s\n' "${dataset}"
   curl -fL --retry 3 --retry-delay 2 --output "${out_file}" "${url}"
   printf '[done] %s\n' "${out_file}"
-}
-
-download_one() {
-  local dataset="$1"
-  local out_dir="${OUT_ROOT}/${dataset}"
-
-  printf '[dataset] %s\n' "${dataset}"
-
-  case "${dataset}" in
-    GSE65682)
-      download_file \
-        "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE65nnn/GSE65682/matrix/GSE65682_series_matrix.txt.gz" \
-        "${out_dir}/GSE65682_series_matrix.txt.gz"
-      ;;
-    GSE95233)
-      download_file \
-        "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE95nnn/GSE95233/matrix/GSE95233_series_matrix.txt.gz" \
-        "${out_dir}/GSE95233_series_matrix.txt.gz"
-      ;;
-    GSE154918)
-      download_file \
-        "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE154nnn/GSE154918/suppl/GSE154918_Schughart_Sepsis_200320.txt.gz" \
-        "${out_dir}/GSE154918_Schughart_Sepsis_200320.txt.gz"
-      download_file \
-        "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE154nnn/GSE154918/matrix/GSE154918_series_matrix.txt.gz" \
-        "${out_dir}/GSE154918_series_matrix.txt.gz"
-      ;;
-    GSE28750)
-      download_file \
-        "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE28nnn/GSE28750/matrix/GSE28750_series_matrix.txt.gz" \
-        "${out_dir}/GSE28750_series_matrix.txt.gz"
-      ;;
-    GSE69528)
-      download_file \
-        "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE69nnn/GSE69528/matrix/GSE69528_series_matrix.txt.gz" \
-        "${out_dir}/GSE69528_series_matrix.txt.gz"
-      ;;
-    *)
-      printf 'Unknown dataset: %s\n' "${dataset}" >&2
-      return 1
-      ;;
-  esac
 }
 
 declare -a datasets=()

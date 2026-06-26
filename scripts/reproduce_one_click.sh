@@ -80,15 +80,26 @@ python3 scripts/extract_expression_matrices.py GSE65682 GSE95233 GSE154918 GSE28
 python3 scripts/build_gene_level_matrices.py GSE65682 GSE95233 GSE154918 GSE28750
 python3 scripts/build_dataset_summary.py
 python3 scripts/build_task_ready_datasets.py task_a task_b task_c
+
 python3 scripts/run_task_a_preprocessing_benchmark.py
 python3 scripts/run_task_preprocessing_benchmark.py --task-id task_b
 python3 scripts/run_task_preprocessing_benchmark.py --task-id task_c
 python3 scripts/run_task_a_calibration_benchmark.py
+
+python3 scripts/export_classification_diagnostics.py
+python3 scripts/compute_paired_bootstrap_differences.py
+python3 scripts/export_calibration_diagnostics.py
+python3 scripts/run_adaptive_reference_size_sensitivity.py
+python3 scripts/run_regularization_sensitivity.py
+
 python3 scripts/compute_external_metric_ci.py
-python3 scripts/export_logistic_model_coefficients.py --task-id task_a
+python3 scripts/export_logistic_model_coefficients.py
+python3 scripts/export_fold_coefficient_stability.py
 python3 scripts/build_cohort_master_summary.py
 python3 scripts/build_cohort_flow_summary.py
 python3 scripts/build_metadata_completeness_table.py
+python3 scripts/export_sample_harmonization_supplement.py
+
 python3 scripts/plot_benchmark_design_figure.py
 python3 scripts/plot_task_a_figure2_prototype.py
 python3 scripts/plot_task_b_figure_prototype.py
@@ -104,6 +115,6 @@ find results/figures -maxdepth 1 -type f \( -name '*.png' -o -name '*.pdf' -o -n
 
 python3 -m pip freeze > "${AUDIT_DIR}/pip_freeze.txt"
 
-echo "[done] Full public pipeline reproduction complete."
+echo "[done] Full revision pipeline reproduction complete."
 echo "[figures] results/figures/"
 echo "[plots] plots/"

@@ -20,8 +20,8 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from run_task_a_preprocessing_benchmark import (  # noqa: E402
     EVAL_DATASETS,
-    METHODS,
     RANDOM_STATE,
+    STRATEGIES,
     TRAIN_DATASET,
     load_task_matrix,
     load_task_metadata,
@@ -98,7 +98,7 @@ def internal_cv_scores(
             method=preprocessing_method,
             x_train=fold_train,
             x_eval=fold_val,
-            use_eval_reference=(preprocessing_method == "cohort_robust_scale"),
+            use_eval_reference=False,
         )
         estimator = build_estimator(calibration_method)
         estimator.fit(transformed.x_train, fold_y)
@@ -125,7 +125,10 @@ def main() -> int:
     summary_rows: list[dict[str, str | float | int]] = []
     prediction_rows: list[dict[str, str | float | int]] = []
 
-    for preprocessing_method in METHODS:
+    for strategy_def in STRATEGIES:
+        strategy = strategy_def["strategy"]
+        preprocessing_method = strategy_def["preprocessing_method"]
+        external_reference_strategy = strategy_def["external_reference_strategy"]
         for calibration_method in CALIBRATION_METHODS:
             cv_scores = internal_cv_scores(
                 x_train=train_matrix,
@@ -142,8 +145,11 @@ def main() -> int:
                 metrics = score_predictions(y_train, cv_scores, threshold=threshold)
                 summary_rows.append(
                     {
+                        "method": strategy,
+                        "strategy": strategy,
                         "preprocessing_method": preprocessing_method,
                         "calibration_method": calibration_method,
+                        "external_reference_strategy": "training_fold_only",
                         "evaluation_type": "internal_cv",
                         "threshold_type": threshold_type,
                         "threshold": float(threshold),
@@ -159,8 +165,11 @@ def main() -> int:
             for sample_id, score in cv_scores.items():
                 prediction_rows.append(
                     {
+                        "method": strategy,
+                        "strategy": strategy,
                         "preprocessing_method": preprocessing_method,
                         "calibration_method": calibration_method,
+                        "external_reference_strategy": "training_fold_only",
                         "evaluation_type": "internal_cv",
                         "dataset_id": TRAIN_DATASET,
                         "sample_id": sample_id,
@@ -189,7 +198,7 @@ def main() -> int:
                     method=preprocessing_method,
                     x_train=train_matrix,
                     x_eval=test_matrix,
-                    use_eval_reference=(preprocessing_method == "cohort_robust_scale"),
+                    use_eval_reference=bool(strategy_def["use_eval_reference_external"]),
                 )
                 scores = pd.Series(
                     estimator.predict_proba(transformed_test.x_eval)[:, 1],
@@ -203,8 +212,11 @@ def main() -> int:
                     metrics = score_predictions(y_test, scores, threshold=threshold)
                     summary_rows.append(
                         {
+                            "method": strategy,
+                            "strategy": strategy,
                             "preprocessing_method": preprocessing_method,
                             "calibration_method": calibration_method,
+                            "external_reference_strategy": external_reference_strategy,
                             "evaluation_type": "external",
                             "threshold_type": threshold_type,
                             "threshold": float(threshold),
@@ -220,8 +232,11 @@ def main() -> int:
                 for sample_id, score in scores.items():
                     prediction_rows.append(
                         {
+                            "method": strategy,
+                            "strategy": strategy,
                             "preprocessing_method": preprocessing_method,
                             "calibration_method": calibration_method,
+                            "external_reference_strategy": external_reference_strategy,
                             "evaluation_type": "external",
                             "dataset_id": dataset_id,
                             "sample_id": sample_id,

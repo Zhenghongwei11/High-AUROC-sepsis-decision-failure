@@ -20,6 +20,32 @@ RANDOM_STATE = 20260313
 TRAIN_DATASET = "GSE65682"
 EVAL_DATASETS = ["GSE95233", "GSE154918", "GSE28750"]
 METHODS = ["standard_zscore", "sample_rank_zscore", "cohort_robust_scale"]
+STRATEGIES = [
+    {
+        "strategy": "standard_zscore_train_only",
+        "preprocessing_method": "standard_zscore",
+        "external_reference_strategy": "training_only",
+        "use_eval_reference_external": False,
+    },
+    {
+        "strategy": "robust_scale_train_only",
+        "preprocessing_method": "cohort_robust_scale",
+        "external_reference_strategy": "training_only",
+        "use_eval_reference_external": False,
+    },
+    {
+        "strategy": "sample_rank_zscore",
+        "preprocessing_method": "sample_rank_zscore",
+        "external_reference_strategy": "sample_wise_rank_then_training_only",
+        "use_eval_reference_external": False,
+    },
+    {
+        "strategy": "robust_scale_external_adaptive",
+        "preprocessing_method": "cohort_robust_scale",
+        "external_reference_strategy": "external_cohort_adaptive",
+        "use_eval_reference_external": True,
+    },
+]
 
 
 @dataclass
@@ -240,7 +266,10 @@ def main() -> int:
         for dataset_id in EVAL_DATASETS
     }
 
-    for method in METHODS:
+    for strategy_def in STRATEGIES:
+        strategy = strategy_def["strategy"]
+        method = strategy_def["preprocessing_method"]
+        external_reference_strategy = strategy_def["external_reference_strategy"]
         cv_scores = internal_cv_scores(train_matrix, y_train, method=method)
         best_threshold, best_bal_acc = pick_best_threshold(y_train, cv_scores)
 
@@ -248,7 +277,10 @@ def main() -> int:
         internal_best = score_predictions(y_train, cv_scores, threshold=best_threshold)
         summary_rows.append(
             {
-                "method": method,
+                "method": strategy,
+                "strategy": strategy,
+                "preprocessing_method": method,
+                "external_reference_strategy": "training_fold_only",
                 "evaluation_type": "internal_cv",
                 "threshold_type": "default_0_5",
                 "threshold": 0.5,
@@ -262,7 +294,10 @@ def main() -> int:
         )
         summary_rows.append(
             {
-                "method": method,
+                "method": strategy,
+                "strategy": strategy,
+                "preprocessing_method": method,
+                "external_reference_strategy": "training_fold_only",
                 "evaluation_type": "internal_cv",
                 "threshold_type": "train_cv_optimal",
                 "threshold": best_threshold,
@@ -278,7 +313,10 @@ def main() -> int:
         for sample_id, score in cv_scores.items():
             prediction_rows.append(
                 {
-                    "method": method,
+                    "method": strategy,
+                    "strategy": strategy,
+                    "preprocessing_method": method,
+                    "external_reference_strategy": "training_fold_only",
                     "evaluation_type": "internal_cv",
                     "dataset_id": TRAIN_DATASET,
                     "sample_id": sample_id,
@@ -307,7 +345,7 @@ def main() -> int:
                 method=method,
                 x_train=train_matrix,
                 x_eval=test_matrix,
-                use_eval_reference=(method == "cohort_robust_scale"),
+                use_eval_reference=bool(strategy_def["use_eval_reference_external"]),
             )
             scores = pd.Series(
                 model.predict_proba(external_transform.x_eval)[:, 1],
@@ -318,7 +356,10 @@ def main() -> int:
 
             summary_rows.append(
                 {
-                    "method": method,
+                    "method": strategy,
+                    "strategy": strategy,
+                    "preprocessing_method": method,
+                    "external_reference_strategy": external_reference_strategy,
                     "evaluation_type": "external",
                     "threshold_type": "default_0_5",
                     "threshold": 0.5,
@@ -332,7 +373,10 @@ def main() -> int:
             )
             summary_rows.append(
                 {
-                    "method": method,
+                    "method": strategy,
+                    "strategy": strategy,
+                    "preprocessing_method": method,
+                    "external_reference_strategy": external_reference_strategy,
                     "evaluation_type": "external",
                     "threshold_type": "train_cv_optimal",
                     "threshold": best_threshold,
@@ -348,7 +392,10 @@ def main() -> int:
             for sample_id, score in scores.items():
                 prediction_rows.append(
                     {
-                        "method": method,
+                        "method": strategy,
+                        "strategy": strategy,
+                        "preprocessing_method": method,
+                        "external_reference_strategy": external_reference_strategy,
                         "evaluation_type": "external",
                         "dataset_id": dataset_id,
                         "sample_id": sample_id,

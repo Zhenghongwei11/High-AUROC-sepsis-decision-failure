@@ -12,18 +12,28 @@ import seaborn as sns
 
 METHOD_LABELS = {
     "standard_zscore": "Standard z-score",
+    "standard_zscore_train_only": "Standard z-score\n(train ref)",
+    "robust_scale_train_only": "Robust scale\n(train ref)",
     "sample_rank_zscore": "Sample rank + z-score",
     "cohort_robust_scale": "Cohort robust scale",
+    "robust_scale_external_adaptive": "Robust scale\n(external ref)",
 }
 METHOD_ORDER = [
-    "Standard z-score",
+    "Standard z-score\n(train ref)",
+    "Robust scale\n(train ref)",
     "Sample rank + z-score",
-    "Cohort robust scale",
+    "Robust scale\n(external ref)",
 ]
 METHOD_COLORS = {
-    "Standard z-score": "#6E7F80",
+    "Standard z-score\n(train ref)": "#6E7F80",
+    "Robust scale\n(train ref)": "#9B8E7E",
     "Sample rank + z-score": "#4C6A92",
-    "Cohort robust scale": "#8B5E3C",
+    "Robust scale\n(external ref)": "#8B5E3C",
+}
+COEFFICIENT_METHOD_LABELS = {
+    "standard_zscore": "Standard z-score",
+    "sample_rank_zscore": "Sample rank + z-score",
+    "cohort_robust_scale": "Cohort robust scale",
 }
 CLASS_COLORS = {
     "Healthy": "#D8DEE5",
@@ -186,7 +196,7 @@ def render_taskc_figure(taskc_summary: pd.DataFrame, taskc_predictions: pd.DataF
         & (calibration["threshold_type"] == "default_0_5")
         & (calibration["test_dataset"] == "GSE154918")
     ].copy()
-    calibration["preprocessing_label"] = calibration["preprocessing_method"].map(METHOD_LABELS)
+    calibration["method_label"] = calibration["method"].map(METHOD_LABELS)
     calibration["calibration_label"] = calibration["calibration_method"].map(
         {"none": "No post hoc calibration", "sigmoid": "Sigmoid", "isotonic": "Isotonic"}
     )
@@ -277,7 +287,7 @@ def render_taskc_figure(taskc_summary: pd.DataFrame, taskc_predictions: pd.DataF
 
     sns.barplot(
         data=calibration,
-        x="preprocessing_label",
+        x="method_label",
         y="balanced_accuracy_pct",
         hue="calibration_label",
         order=METHOD_ORDER,
@@ -322,7 +332,7 @@ def render_taskc_figure(taskc_summary: pd.DataFrame, taskc_predictions: pd.DataF
         [
             "train_dataset",
             "test_dataset",
-            "preprocessing_label",
+            "method_label",
             "calibration_label",
             "balanced_accuracy_pct",
             "roc_auc",
@@ -335,7 +345,6 @@ def render_taskc_figure(taskc_summary: pd.DataFrame, taskc_predictions: pd.DataF
     ].copy()
     calibration_export = calibration_export.rename(
         columns={
-            "preprocessing_label": "method_label",
             "roc_auc": "roc_auc_pct",
             "predicted_positive_rate": "predicted_positive_rate_pct",
             "n_positive": "observed_positive_rate_pct",
@@ -355,13 +364,11 @@ def render_taskc_figure(taskc_summary: pd.DataFrame, taskc_predictions: pd.DataF
 
 def render_taska_coefficient_stability(coeff_dir: Path, outdir: Path) -> None:
     method_files = {
-        "standard_zscore": coeff_dir / "task_a_standard_zscore_coefficients.tsv",
-        "sample_rank_zscore": coeff_dir / "task_a_sample_rank_zscore_coefficients.tsv",
-        "cohort_robust_scale": coeff_dir / "task_a_cohort_robust_scale_coefficients.tsv",
+        "standard_zscore": coeff_dir / "task_a_standard_zscore_coefficients.tsv.gz",
+        "sample_rank_zscore": coeff_dir / "task_a_sample_rank_zscore_coefficients.tsv.gz",
+        "cohort_robust_scale": coeff_dir / "task_a_cohort_robust_scale_coefficients.tsv.gz",
     }
-    method_label_map = {
-        key: METHOD_LABELS[key] for key in method_files
-    }
+    method_label_map = {key: COEFFICIENT_METHOD_LABELS[key] for key in method_files}
 
     merged = None
     for method, path in method_files.items():

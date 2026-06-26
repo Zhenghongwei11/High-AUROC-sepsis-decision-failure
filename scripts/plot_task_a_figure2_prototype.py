@@ -12,13 +12,17 @@ import seaborn as sns
 
 METHOD_LABELS = {
     "standard_zscore": "Standard z-score",
+    "standard_zscore_train_only": "Standard z-score\n(train ref)",
+    "robust_scale_train_only": "Robust scale\n(train ref)",
     "sample_rank_zscore": "Sample rank + z-score",
     "cohort_robust_scale": "Cohort robust scale",
+    "robust_scale_external_adaptive": "Robust scale\n(external ref)",
 }
 METHOD_ORDER = [
-    "Standard z-score",
+    "Standard z-score\n(train ref)",
+    "Robust scale\n(train ref)",
     "Sample rank + z-score",
-    "Cohort robust scale",
+    "Robust scale\n(external ref)",
 ]
 DATASET_LABELS = {
     "GSE95233": "GSE95233\nexternal microarray",
@@ -31,9 +35,10 @@ DATASET_ORDER = [
     "GSE28750\nstress test",
 ]
 METHOD_COLORS = {
-    "Standard z-score": "#6E7F80",
+    "Standard z-score\n(train ref)": "#6E7F80",
+    "Robust scale\n(train ref)": "#9B8E7E",
     "Sample rank + z-score": "#4C6A92",
-    "Cohort robust scale": "#8B5E3C",
+    "Robust scale\n(external ref)": "#8B5E3C",
 }
 CLASS_COLORS = {
     "Negative": "#C8D1DB",
@@ -116,7 +121,7 @@ def main() -> int:
     external_default["observed_positive_rate_pct"] = external_default["n_positive"] / external_default["n_samples"] * 100
 
     standard_external = predictions[
-        (predictions["method"] == "standard_zscore") & (predictions["evaluation_type"] == "external")
+        (predictions["method"] == "standard_zscore_train_only") & (predictions["evaluation_type"] == "external")
     ].copy()
 
     fig, axes = plt.subplots(2, 2, figsize=(11.2, 8.4), constrained_layout=True)
@@ -129,8 +134,8 @@ def main() -> int:
         order=DATASET_ORDER,
         hue_order=METHOD_ORDER,
         palette=METHOD_COLORS,
-        markers=["o", "s", "D"],
-        linestyles=["-", "-", "-"],
+        markers=["o", "^", "s", "D"],
+        linestyles=["-", "-", "-", "--"],
         errorbar=None,
         ax=axes[0, 0],
     )
@@ -149,8 +154,8 @@ def main() -> int:
         order=DATASET_ORDER,
         hue_order=METHOD_ORDER,
         palette=METHOD_COLORS,
-        markers=["o", "s", "D"],
-        linestyles=["-", "-", "-"],
+        markers=["o", "^", "s", "D"],
+        linestyles=["-", "-", "-", "--"],
         errorbar=None,
         ax=axes[0, 1],
     )
@@ -174,7 +179,7 @@ def main() -> int:
         ax=axes[1, 0],
     )
     axes[1, 0].axhline(0.5, linestyle="--", color="#444444", linewidth=0.9)
-    axes[1, 0].set_title("Standard scaling compresses transferred scores")
+    axes[1, 0].set_title("Training-derived standard scaling compresses transferred scores")
     axes[1, 0].set_xlabel("")
     axes[1, 0].set_ylabel("Predicted probability")
     axes[1, 0].set_ylim(-0.02, 1.02)

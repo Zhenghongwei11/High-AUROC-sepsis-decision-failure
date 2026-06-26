@@ -32,13 +32,6 @@ def parse_args() -> argparse.Namespace:
         description="Export full-model logistic regression coefficients for benchmark tasks."
     )
     parser.add_argument(
-        "--task-id",
-        dest="task_ids",
-        action="append",
-        choices=SUPPORTED_TASKS,
-        help="Optional task identifier. May be supplied more than once.",
-    )
-    parser.add_argument(
         "--out-dir",
         default="results/models",
         help="Directory for coefficient exports.",
@@ -59,10 +52,9 @@ def main() -> int:
     args = parse_args()
     out_dir = ROOT / args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
-    task_ids = args.task_ids or SUPPORTED_TASKS
 
     manifest_rows: list[dict[str, str | int | float]] = []
-    for task_id in task_ids:
+    for task_id in SUPPORTED_TASKS:
         x_train, y_train = load_training_data(task_id)
         for method in METHODS:
             transformed = transform_for_method(
@@ -86,8 +78,8 @@ def main() -> int:
             coef_df["abs_coefficient"] = coef_df["coefficient"].abs()
             coef_df = coef_df.sort_values("abs_coefficient", ascending=False)
 
-            out_path = out_dir / f"{task_id}_{method}_coefficients.tsv"
-            coef_df.to_csv(out_path, sep="\t", index=False)
+            out_path = out_dir / f"{task_id}_{method}_coefficients.tsv.gz"
+            coef_df.to_csv(out_path, sep="\t", index=False, compression="gzip")
 
             manifest_rows.append(
                 {

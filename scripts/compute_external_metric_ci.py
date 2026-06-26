@@ -96,12 +96,19 @@ def collect_groups() -> list[dict[str, str]]:
         df = df.loc[df["evaluation_type"] == "external"].copy()
         if "task_id" not in df.columns:
             df["task_id"] = task_id
+        metadata_columns = [
+            column
+            for column in ["strategy", "preprocessing_method", "external_reference_strategy"]
+            if column in df.columns
+        ]
         for (dataset_id, method), group in df.groupby(["dataset_id", method_col]):
+            metadata = group.iloc[0][metadata_columns].to_dict()
             groups.append(
                 {
                     "task_id": task_id,
                     "dataset_id": dataset_id,
                     "method": method,
+                    **metadata,
                     "group_key": f"{task_id}:{dataset_id}:{method}",
                 }
             )
@@ -147,6 +154,9 @@ def main() -> int:
                     "task_id": group["task_id"],
                     "dataset_id": group["dataset_id"],
                     "method": group["method"],
+                    "strategy": group.get("strategy", group["method"]),
+                    "preprocessing_method": group.get("preprocessing_method", ""),
+                    "external_reference_strategy": group.get("external_reference_strategy", ""),
                     "metric": metric_name,
                     "estimate": estimate,
                     "ci_lower": ci_lower,
@@ -164,7 +174,17 @@ def main() -> int:
     )
     wide_df = (
         long_df.pivot_table(
-            index=["task_id", "dataset_id", "method", "n_samples", "n_positive", "n_negative"],
+            index=[
+                "task_id",
+                "dataset_id",
+                "method",
+                "strategy",
+                "preprocessing_method",
+                "external_reference_strategy",
+                "n_samples",
+                "n_positive",
+                "n_negative",
+            ],
             columns="metric",
             values=["estimate", "ci_lower", "ci_upper"],
         )

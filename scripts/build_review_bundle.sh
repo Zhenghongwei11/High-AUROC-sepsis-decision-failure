@@ -22,6 +22,8 @@ find . \
   ! -path './results/figures/*' \
   ! -path './logs/*' \
   ! -path './docs/audit_runs/*' \
+  ! -path '*/__pycache__/*' \
+  ! -name '*.pyc' \
   ! -name '.DS_Store' \
   | sed 's#^\./##' \
   | LC_ALL=C sort > "${TMP_LIST}"
